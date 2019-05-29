@@ -11,25 +11,22 @@ component {
 	,	numeric httpTimeOut= 60
 	,	boolean debug= ( request.debug ?: false )
 	) {
-		this.apiKey = arguments.apiKey;
-		this.apiReadKey = arguments.apiReadKey;
-		this.apiUrl = arguments.apiUrl;
-		this.apiVersion = arguments.apiVersion;
-		this.defaultLanguage = arguments.defaultLanguage;
-		this.httpTimeOut = arguments.httpTimeOut;
-		this.throttle = arguments.throttle;
+		this.apiKey= arguments.apiKey;
+		this.apiReadKey= arguments.apiReadKey;
+		this.apiUrl= arguments.apiUrl;
+		this.apiVersion= arguments.apiVersion;
+		this.defaultLanguage= arguments.defaultLanguage;
+		this.httpTimeOut= arguments.httpTimeOut;
+		this.throttle= arguments.throttle;
 		this.debug= arguments.debug;
-		this.lastRequest = 0;
-		if ( structKeyExists( server, "tmdb_lastRequest" ) ) {
-			this.lastRequest = server.tmdb_lastRequest;
-		}
-		this.config = {};
-		this.backdropSizes = ["w300","w780","w1280","original"];
-		this.logoSizes = ["w45","w92","w154","w185","w300","w500","original"];
-		this.posterSizes = ["w92","w154","w185","w342","w500","w780","original"];
-		this.profileSizes = ["w45","w185","h632","original"];
-		this.stillSizes = ["w92","w185","w300","original"];
-		this.imageUrl = "https://image.tmdb.org/t/p/";
+		this.lastRequest= server.tmdb_lastRequest ?: 0;
+		this.config= {};
+		this.backdropSizes= ["w300","w780","w1280","original"];
+		this.logoSizes= ["w45","w92","w154","w185","w300","w500","original"];
+		this.posterSizes= ["w92","w154","w185","w342","w500","w780","original"];
+		this.profileSizes= ["w45","w185","h632","original"];
+		this.stillSizes= ["w92","w185","w300","original"];
+		this.imageUrl= "https://image.tmdb.org/t/p/";
 		return this;
 	}
 
@@ -52,19 +49,19 @@ component {
 	}
 
 	struct function apiRequest( required string api ) {
-		arguments[ "api_key" ] = this.apiKey;
-		var http = {};
-		var item = "";
-		var out = {
-			args = arguments
-		,	success = false
-		,	error = ""
-		,	status = ""
-		,	statusCode = 0
-		,	response = ""
-		,	verb = listFirst( arguments.api, " " )
-		,	requestUrl = ""
-		,	data = {}
+		arguments[ "api_key" ]= this.apiKey;
+		var http= {};
+		var item= "";
+		var out= {
+			args= arguments
+		,	success= false
+		,	error= ""
+		,	status= ""
+		,	statusCode= 0
+		,	response= ""
+		,	verb= listFirst( arguments.api, " " )
+		,	requestUrl= ""
+		,	data= {}
 		};
 		out.requestUrl &= listRest( out.args.api, " " );
 		structDelete( out.args, "api" );
@@ -74,18 +71,18 @@ component {
 			if ( isNull( out.args[ item ] ) ) {
 				structDelete( out.args, item );
 			} else if ( isSimpleValue( arguments[ item ] ) && arguments[ item ] == "null" ) {
-				arguments[ item ] = javaCast( "null", 0 );
+				arguments[ item ]= javaCast( "null", 0 );
 			} else if ( findNoCase( "{#item#}", out.requestUrl ) ) {
-				out.requestUrl = replaceNoCase( out.requestUrl, "{#item#}", out.args[ item ], "all" );
+				out.requestUrl= replaceNoCase( out.requestUrl, "{#item#}", out.args[ item ], "all" );
 				structDelete( out.args, item );
 			}
 		}
 		if ( out.verb == "GET" ) {
 			out.requestUrl &= this.structToQueryString( out.args, true );
 		} else if ( !structIsEmpty( out.args ) ) {
-			out.body = serializeJSON( out.args );
+			out.body= serializeJSON( out.args );
 		}
-		out.requestUrl = replace( this.apiUrl, "<ver>", this.apiVersion ) & out.requestUrl;
+		out.requestUrl= replace( this.apiUrl, "<ver>", this.apiVersion ) & out.requestUrl;
 		this.debugLog( "API: #uCase( out.verb )#: #out.requestUrl#" );
 		if ( structKeyExists( out, "body" ) ) {
 			this.debugLog( out.body );
@@ -93,57 +90,56 @@ component {
 		if ( request.debug && request.dump ) {
 			this.debugLog( out );
 		}
-		lock name="tmdb_limiter" type="exclusive" timeOut="#this.httpTimeOut#" throwOnTimeOut="false" {
-			if ( this.lastRequest > 0 && this.throttle > 0 ) {
-				arguments.wait = this.throttle - ( getTickCount() - this.lastRequest );
-				if ( arguments.wait > 0 ) {
-					this.debugLog( "Pausing for #arguments.wait#/ms" );
-					cfthread( duration=arguments.wait, action="sleep" );
-				}
-			}
-			cftimer( type="debug", label="tmdb request" ) {
-				cfhttp( charset="UTF-8", throwOnError=false, url=out.requestUrl, timeOut=this.httpTimeOut, result="http", method=out.verb ) {
-					if ( out.verb == "POST" || out.verb == "PUT" || out.verb == "PATCH" ) {
-						cfhttpparam( name="content-type", type="header", value="application/json" );
-					}
-					if ( structKeyExists( out, "body" ) ) {
-						cfhttpparam( type="body", value=out.body );
-					}
-				}
-			}
-			out.response = toString( http.fileContent );
-			// this.debugLog( out.response );
-			out.statusCode = http.responseHeader.Status_Code ?: 500;
-			this.debugLog( out.statusCode );
-			if ( this.throttle > 0 ) {
-				this.lastRequest = getTickCount();
-				server.tmdb_lastRequest = this.lastRequest;
+		// throttle requests by sleeping the thread to prevent overloading api
+		if ( this.lastRequest > 0 && this.throttle > 0 ) {
+			arguments.wait= this.throttle - ( getTickCount() - this.lastRequest );
+			if ( arguments.wait > 0 ) {
+				this.debugLog( "Pausing for #arguments.wait#/ms" );
+				cfthread( duration=arguments.wait, action="sleep" );
 			}
 		}
+		cftimer( type="debug", label="tmdb request" ) {
+			cfhttp( charset="UTF-8", throwOnError=false, url=out.requestUrl, timeOut=this.httpTimeOut, result="http", method=out.verb ) {
+				if ( out.verb == "POST" || out.verb == "PUT" || out.verb == "PATCH" ) {
+					cfhttpparam( name="content-type", type="header", value="application/json" );
+				}
+				if ( structKeyExists( out, "body" ) ) {
+					cfhttpparam( type="body", value=out.body );
+				}
+			}
+			if ( this.throttle > 0 ) {
+				this.lastRequest= getTickCount();
+				server.tmdb_lastRequest= this.lastRequest;
+			}
+		}
+		out.response= toString( http.fileContent );
+		// this.debugLog( out.response );
+		out.statusCode= http.responseHeader.Status_Code ?: 500;
+		this.debugLog( out.statusCode );
 		if ( left( out.statusCode, 1 ) == 4 || left( out.statusCode, 1 ) == 5 ) {
-			out.error = "status code error: #out.statusCode#";
+			out.error= "status code error: #out.statusCode#";
 		} else if ( out.response == "Connection Timeout" || out.response == "Connection Failure" ) {
-			out.error = out.response;
+			out.error= out.response;
 		} else if ( left( out.statusCode, 1 ) == 2 ) {
-			out.success = true;
+			out.success= true;
 		}
 		//  parse response 
 		try {
-			out.data = deserializeJSON( out.response );
+			out.data= deserializeJSON( out.response );
 			if ( isStruct( out.data ) && structKeyExists( out.data, "error" ) ) {
-				out.success = false;
-				out.error = out.data.error;
+				out.success= false;
+				out.error= out.data.error;
 			} else if ( isStruct( out.data ) && structKeyExists( out.data, "status" ) && out.data.status == 400 ) {
-				out.success = false;
-				out.error = out.data.detail;
+				out.success= false;
+				out.error= out.data.detail;
 			}
 		} catch (any cfcatch) {
-			out.error = "JSON Error: " & cfcatch.message;
+			out.error= "JSON Error: " & cfcatch.message;
 			request.log( cfcatch );
 			request.log( out.response );
 		}
 		if ( len( out.error ) ) {
-			out.success = false;
+			out.success= false;
 		}
 		return out;
 	}
@@ -185,10 +181,10 @@ component {
 	,	string with_original_language
 	) {
 		//  rename stupid .lte and .gte arguments 
-		var item = "";
+		var item= "";
 		for ( item in arguments ) {
 			if ( right( item, 3 ) == "lte" || right( item, 3 ) == "gte" ) {
-				arguments[ replaceList( item, "_lte,_gte", ".lte,.gte" ) ] = arguments[ item ];
+				arguments[ replaceList( item, "_lte,_gte", ".lte,.gte" ) ]= arguments[ item ];
 				structDelete( arguments, item );
 			}
 		}
@@ -217,10 +213,10 @@ component {
 	,	string without_keywords
 	) {
 		//  rename stupid .lte and .gte arguments 
-		var item = "";
+		var item= "";
 		for ( item in arguments ) {
 			if ( right( item, 3 ) == "lte" || right( item, 3 ) == "gte" ) {
-				arguments[ replaceList( item, "_lte,_gte", ".lte,.gte" ) ] = arguments[ item ];
+				arguments[ replaceList( item, "_lte,_gte", ".lte,.gte" ) ]= arguments[ item ];
 				structDelete( arguments, item );
 			}
 		}
@@ -236,18 +232,18 @@ component {
 	}
 
 	struct function findByTVdbID( required string imdb_id, string language= this.defaultLanguage ) {
-		arguments[ "external_source" ] = "tvdb_id";
-		arguments.external_id = arguments.tvdb_id;
+		arguments[ "external_source" ]= "tvdb_id";
+		arguments.external_id= arguments.tvdb_id;
 		structDelete( arguments, "tvdb_id" );
 		return this.apiRequest( api= "GET /find/{external_id}", argumentCollection= arguments );
 	}
 
 	struct function findByIMDbID( required string imdb_id, string language= this.defaultLanguage ) {
 		if ( isNumeric( arguments.imdb_id ) ) {
-			arguments.imdb_id = this.imdbID( arguments.imdb_id );
+			arguments.imdb_id= this.imdbID( arguments.imdb_id );
 		}
-		arguments.external_source = "imdb_id";
-		arguments.external_id = arguments.imdb_id;
+		arguments.external_source= "imdb_id";
+		arguments.external_id= arguments.imdb_id;
 		structDelete( arguments, "imdb_id" );
 		return this.apiRequest( api= "GET /find/{external_id}", argumentCollection= arguments );
 	}
@@ -266,7 +262,7 @@ component {
 	,	numeric primary_release_year
 	) {
 		if ( structKeyExists( arguments, "region" ) ) {
-			arguments.region = uCase( arguments.region );
+			arguments.region= uCase( arguments.region );
 		}
 		return this.apiRequest( api= "GET /search/movie", argumentCollection= arguments );
 	}
@@ -288,7 +284,7 @@ component {
 	,	string region
 	) {
 		if ( structKeyExists( arguments, "region" ) ) {
-			arguments.region = uCase( arguments.region );
+			arguments.region= uCase( arguments.region );
 		}
 		return this.apiRequest( api= "GET /search/person", argumentCollection= arguments );
 	}
@@ -313,7 +309,7 @@ component {
 	,	string region
 	) {
 		if ( structKeyExists( arguments, "region" ) ) {
-			arguments.region = uCase( arguments.region );
+			arguments.region= uCase( arguments.region );
 		}
 		return this.apiRequest( api= "GET /search/multi", argumentCollection= arguments );
 	}
@@ -376,21 +372,21 @@ component {
 
 	struct function getMoviesPopular( string language= this.defaultLanguage, numeric page= 1, string region ) {
 		if ( structKeyExists( arguments, "region" ) ) {
-			arguments.region = uCase( arguments.region );
+			arguments.region= uCase( arguments.region );
 		}
 		return this.apiRequest( api= "GET /movie/popular", argumentCollection= arguments );
 	}
 
 	struct function getMoviesTopRated( string language= this.defaultLanguage, numeric page= 1, string region ) {
 		if ( structKeyExists( arguments, "region" ) ) {
-			arguments.region = uCase( arguments.region );
+			arguments.region= uCase( arguments.region );
 		}
 		return this.apiRequest( api= "GET /movie/top_rated", argumentCollection= arguments );
 	}
 
 	struct function getMovieTopRated( string language= this.defaultLanguage, numeric page= 1, string region ) {
 		if ( structKeyExists( arguments, "region" ) ) {
-			arguments.region = uCase( arguments.region );
+			arguments.region= uCase( arguments.region );
 		}
 		return this.apiRequest( api= "GET /movie/top_rated", argumentCollection= arguments );
 	}
@@ -457,14 +453,14 @@ component {
 
 	struct function getTVsPopular( string language= this.defaultLanguage, numeric page= 1, string region ) {
 		if ( structKeyExists( arguments, "region" ) ) {
-			arguments.region = uCase( arguments.region );
+			arguments.region= uCase( arguments.region );
 		}
 		return this.apiRequest( api= "GET /tv/popular", argumentCollection= arguments );
 	}
 
 	struct function getTVsTopRated( string language= this.defaultLanguage, numeric page= 1, string region ) {
 		if ( structKeyExists( arguments, "region" ) ) {
-			arguments.region = uCase( arguments.region );
+			arguments.region= uCase( arguments.region );
 		}
 		return this.apiRequest( api= "GET /tv/top_rated", argumentCollection= arguments );
 	}
@@ -535,9 +531,9 @@ component {
 
 	struct function getConfig( boolean force= false ) {
 		if ( arguments.force || structKeyExists( this, "config" ) ) {
-			var out = this.apiRequest( api= "GET /configuration", argumentCollection= arguments );
+			var out= this.apiRequest( api= "GET /configuration", argumentCollection= arguments );
 			if ( out.success ) {
-				this.config = out.data;
+				this.config= out.data;
 			}
 		}
 		return this.config;
@@ -589,25 +585,25 @@ component {
 
 	string function imdbID( numeric input= true ) {
 		if ( isNumeric( arguments.input ) ) {
-			arguments.input = "tt" & numberFormat( arguments.input, "0000000" );
+			arguments.input= "tt" & numberFormat( arguments.input, "0000000" );
 		}
 		return arguments.input;
 	}
 
 	string function structToQueryString( required struct stInput, boolean bEncode= true ) {
-		var sOutput = "";
-		var sItem = "";
-		var sValue = "";
-		var amp = "?";
+		var sOutput= "";
+		var sItem= "";
+		var sValue= "";
+		var amp= "?";
 		for ( sItem in stInput ) {
-			sValue = stInput[ sItem ];
+			sValue= stInput[ sItem ];
 			if ( !isNull( sValue ) && len( sValue ) ) {
 				if ( bEncode ) {
 					sOutput &= amp & sItem & "=" & urlEncodedFormat( sValue );
 				} else {
 					sOutput &= amp & sItem & "=" & sValue;
 				}
-				amp = "&";
+				amp= "&";
 			}
 		}
 		return sOutput;
