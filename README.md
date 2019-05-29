@@ -9,9 +9,13 @@
 # cftmdb
 TMDb (TheMovieDb.org) ColdFusion Rest API Client
 
-# Changes
-2019-05-29 Initial release
+## To Install
+Run the following from commandbox:
+`box install cftmdb`
 
-# API documentation
+## Changes
+2019-05-29 Open source release
+
+## API documentation
 https://www.themoviedb.org/documentation/api
 
