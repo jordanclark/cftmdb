@@ -1,0 +1,39 @@
+{
+    "name":"cftmdb",
+    "slug":"cftmdb",
+    "version":"0.5.0",
+    "author":"Jordan Clark <jordanclark@gmail.com>",
+    "keywords":[
+        "tmdb",
+        "themoviedb",
+        "movies",
+        "api",
+        "rest"
+    ],
+    "shortDescription":"API client for themoviedb.org",
+    "type":"modules",
+    "location":"jordanclark/cftmdb#v0.5.0",
+    "repository":{
+        "URL":"https://github.com/jordanclark/cftmdb.git",
+        "type":"GIT"
+    },
+    "homepage":"https://github.com/jordanclark/cftmdb",
+    "bugs":"https://github.com/jordanclark/cftmdb/issues",
+    "license":[
+        {
+            "type":"Apache-2.0",
+            "URL":"https://github.com/jordanclark/cftmdb/blob/master/LICENSE"
+        }
+    ],
+    "private":false,
+    "ignore":[
+        "**/.*",
+        "/test/",
+        "/tests/"
+    ],
+    "scripts":{
+        "postVersion":"package set location='jordanclark/cftmdb#v`package version`'",
+        "onRelease":"publish",
+        "postPublish":"!git push --follow-tags"
+    }
+}
