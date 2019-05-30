@@ -87,9 +87,7 @@ component {
 		if ( structKeyExists( out, "body" ) ) {
 			this.debugLog( out.body );
 		}
-		if ( request.debug && request.dump ) {
-			this.debugLog( out );
-		}
+		// this.debugLog( out );
 		// throttle requests by sleeping the thread to prevent overloading api
 		if ( this.lastRequest > 0 && this.throttle > 0 ) {
 			arguments.wait= this.throttle - ( getTickCount() - this.lastRequest );
