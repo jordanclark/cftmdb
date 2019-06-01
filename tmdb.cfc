@@ -90,10 +90,10 @@ component {
 		// this.debugLog( out );
 		// throttle requests by sleeping the thread to prevent overloading api
 		if ( this.lastRequest > 0 && this.throttle > 0 ) {
-			arguments.wait= this.throttle - ( getTickCount() - this.lastRequest );
-			if ( arguments.wait > 0 ) {
-				this.debugLog( "Pausing for #arguments.wait#/ms" );
-				cfthread( duration=arguments.wait, action="sleep" );
+			var wait= this.throttle - ( getTickCount() - this.lastRequest );
+			if ( wait > 0 ) {
+				this.debugLog( "Pausing for #wait#/ms" );
+				sleep( wait );
 			}
 		}
 		cftimer( type="debug", label="tmdb request" ) {
