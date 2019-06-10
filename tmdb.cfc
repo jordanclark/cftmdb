@@ -65,9 +65,9 @@ component {
 		};
 		out.requestUrl &= listRest( out.args.api, " " );
 		structDelete( out.args, "api" );
-		//  replace {var} in url 
+		// replace {var} in url 
 		for ( item in out.args ) {
-			//  strip NULL values 
+			// strip NULL values 
 			if ( isNull( out.args[ item ] ) ) {
 				structDelete( out.args, item );
 			} else if ( isSimpleValue( arguments[ item ] ) && arguments[ item ] == "null" ) {
@@ -121,7 +121,7 @@ component {
 		} else if ( left( out.statusCode, 1 ) == 2 ) {
 			out.success= true;
 		}
-		//  parse response 
+		// parse response 
 		try {
 			out.data= deserializeJSON( out.response );
 			if ( isStruct( out.data ) && structKeyExists( out.data, "error" ) ) {
@@ -140,9 +140,9 @@ component {
 		return out;
 	}
 
-	//  ---------------------------------------------------------------------------------------- 
-	//  DISCOVER MOVIES 
-	//  ---------------------------------------------------------------------------------------- 
+	// ---------------------------------------------------------------------------------------- 
+	// DISCOVER MOVIES 
+	// ---------------------------------------------------------------------------------------- 
 
 	struct function discoverMovies(
 		string language= this.defaultLanguage
@@ -176,7 +176,7 @@ component {
 	,	numeric with_release_type
 	,	string with_original_language
 	) {
-		//  rename stupid .lte and .gte arguments 
+		// rename stupid .lte and .gte arguments 
 		var item= "";
 		for ( item in arguments ) {
 			if ( right( item, 3 ) == "lte" || right( item, 3 ) == "gte" ) {
@@ -208,7 +208,7 @@ component {
 	,	string with_original_language
 	,	string without_keywords
 	) {
-		//  rename stupid .lte and .gte arguments 
+		// rename stupid .lte and .gte arguments 
 		var item= "";
 		for ( item in arguments ) {
 			if ( right( item, 3 ) == "lte" || right( item, 3 ) == "gte" ) {
@@ -219,9 +219,9 @@ component {
 		return this.apiRequest( api= "GET /discover/tv", argumentCollection= arguments );
 	}
 
-	//  ---------------------------------------------------------------------------------------- 
-	//  FIND ID METHODS 
-	//  ---------------------------------------------------------------------------------------- 
+	// ---------------------------------------------------------------------------------------- 
+	// FIND ID METHODS 
+	// ---------------------------------------------------------------------------------------- 
 
 	struct function findByID( required string external_id, string language= this.defaultLanguage, required string external_source ) {
 		return this.apiRequest( api= "GET /find/{external_id}", argumentCollection= arguments );
@@ -244,9 +244,9 @@ component {
 		return this.apiRequest( api= "GET /find/{external_id}", argumentCollection= arguments );
 	}
 
-	//  ---------------------------------------------------------------------------------------- 
-	//  SEARCH METHODS 
-	//  ---------------------------------------------------------------------------------------- 
+	// ---------------------------------------------------------------------------------------- 
+	// SEARCH METHODS 
+	// ---------------------------------------------------------------------------------------- 
 
 	struct function searchMovies(
 		required string query
@@ -310,9 +310,9 @@ component {
 		return this.apiRequest( api= "GET /search/multi", argumentCollection= arguments );
 	}
 
-	//  ---------------------------------------------------------------------------------------- 
-	//  MOVIE METHODS 
-	//  ---------------------------------------------------------------------------------------- 
+	// ---------------------------------------------------------------------------------------- 
+	// MOVIE METHODS 
+	// ---------------------------------------------------------------------------------------- 
 
 	struct function getMovie( required string movie_id, string language= this.defaultLanguage, string append_to_response ) {
 		return this.apiRequest( api= "GET /movie/{movie_id}", argumentCollection= arguments );
@@ -399,9 +399,9 @@ component {
 		return this.apiRequest( api= "GET /movie/changes", argumentCollection= arguments );
 	}
 
-	//  ---------------------------------------------------------------------------------------- 
-	//  TV METHODS 
-	//  ---------------------------------------------------------------------------------------- 
+	// ---------------------------------------------------------------------------------------- 
+	// TV METHODS 
+	// ---------------------------------------------------------------------------------------- 
 
 	struct function getTV( required string tv_id, string language= this.defaultLanguage, string append_to_response ) {
 		return this.apiRequest( api= "GET /tv/{tv_id}", argumentCollection= arguments );
@@ -473,9 +473,9 @@ component {
 		return this.apiRequest( api= "GET /tv/changes", argumentCollection= arguments );
 	}
 
-	//  ---------------------------------------------------------------------------------------- 
-	//  PEOPLE METHODS 
-	//  ---------------------------------------------------------------------------------------- 
+	// ---------------------------------------------------------------------------------------- 
+	// PEOPLE METHODS 
+	// ---------------------------------------------------------------------------------------- 
 
 	struct function getPerson( required string person_id, string language= this.defaultLanguage, string append_to_response ) {
 		return this.apiRequest( api= "GET /person/{person_id}", argumentCollection= arguments );
@@ -509,9 +509,9 @@ component {
 		return this.apiRequest( api= "GET /person/changes", argumentCollection= arguments );
 	}
 
-	//  ---------------------------------------------------------------------------------------- 
-	//  COMPANY METHODS 
-	//  ---------------------------------------------------------------------------------------- 
+	// ---------------------------------------------------------------------------------------- 
+	// COMPANY METHODS 
+	// ---------------------------------------------------------------------------------------- 
 
 	struct function getCompany( required string company_id ) {
 		return this.apiRequest( api= "GET /company/{company_id}", argumentCollection= arguments );
@@ -521,9 +521,9 @@ component {
 		return this.apiRequest( api= "GET /company/{company_id}/movies", argumentCollection= arguments );
 	}
 	
-	//  ---------------------------------------------------------------------------------------- 
-	//  MISC METHODS 
-	//  ---------------------------------------------------------------------------------------- 
+	// ---------------------------------------------------------------------------------------- 
+	// MISC METHODS 
+	// ---------------------------------------------------------------------------------------- 
 
 	struct function getConfig( boolean force= false ) {
 		if ( arguments.force || structKeyExists( this, "config" ) ) {
