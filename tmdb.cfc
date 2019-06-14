@@ -581,7 +581,11 @@ component {
 
 	string function imdbID( numeric input= true ) {
 		if ( isNumeric( arguments.input ) ) {
-			arguments.input= "tt" & numberFormat( arguments.input, "0000000" );
+			if( arguments.input >= 10000000 ) {
+				arguments.input= "tt" & numberFormat( arguments.input, "00000000" );
+			} else {
+				arguments.input= "tt" & numberFormat( arguments.input, "0000000" );
+			}
 		}
 		return arguments.input;
 	}
