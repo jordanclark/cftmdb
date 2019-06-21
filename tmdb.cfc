@@ -132,7 +132,7 @@ component {
 				out.error= out.data.detail;
 			}
 		} catch (any cfcatch) {
-			out.error= "JSON Error: " & cfcatch.message & " " & cfcatch.detail;
+			out.error= "JSON Error: " & (cfcatch.message?:"No catch message") & " " & (cfcatch.detail?:"No catch detail");
 		}
 		if ( len( out.error ) ) {
 			out.success= false;
