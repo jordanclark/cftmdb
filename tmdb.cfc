@@ -1,5 +1,5 @@
 component {
-	cfprocessingdirective( preserveCase=true );
+	// cfprocessingdirective( preserveCase=true );
 
 	TMDb function init(
 		required string apiKey
@@ -9,8 +9,9 @@ component {
 	,	string defaultLanguage= "en-US"
 	,	numeric throttle= 250
 	,	numeric httpTimeOut= 60
-	,	boolean debug= ( request.debug ?: false )
+	,	boolean debug
 	) {
+		arguments.debug = ( arguments.debug ?: request.debug ?: false );
 		this.apiKey= arguments.apiKey;
 		this.apiReadKey= arguments.apiReadKey;
 		this.apiUrl= arguments.apiUrl;
@@ -43,7 +44,12 @@ component {
 				request.log( arguments.input );
 			}
 		} else if ( this.debug ) {
-			cftrace( text=( isSimpleValue( arguments.input ) ? arguments.input : "" ), var=arguments.input, category="TMDb", type="information" );
+			var info= ( isSimpleValue( arguments.input ) ? arguments.input : serializeJson( arguments.input ) );
+			cftrace(
+				var= "info"
+			,	category= "TMDb"
+			,	type= "information"
+			);
 		}
 		return;
 	}
